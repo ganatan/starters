@@ -12,12 +12,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "module": "CommonJS",
   "devDependencies": {
     "typescript": "5.9.3"
   },
   "dependencies": {
+    "axios": "1.13.2",
     "nodemon": "3.1.11",
+    "rxjs": "7.8.2",
     "ts-node": "10.9.2"
   }
 }

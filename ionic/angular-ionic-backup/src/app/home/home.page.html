@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Films</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button (click)="load()">Charger</ion-button>
+  <ion-list>
+    <ion-item *ngFor="let m of movies">
+      {{ m }}
+    </ion-item>
+  </ion-list>
+</ion-content>
+
