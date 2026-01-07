@@ -1,28 +1,39 @@
 package com.ganatan.starter.api.root;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 class RootControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Test
+  void root_shouldReturnAMap() {
+    RootController controller = new RootController();
+    Map<String, Object> result = controller.root();
+
+    assertNotNull(result);
+    assertEquals("springboot-starter", result.get("application"));
+    assertEquals("running", result.get("status"));
+    assertTrue(result.containsKey("java"));
+    assertNotNull(result.get("java"));
+  }
 
   @Test
-  void root_shouldReturnApplicationStatusAndJavaVersion() throws Exception {
-    mockMvc.perform(get("/"))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.application").value("springboot-starter"))
-      .andExpect(jsonPath("$.status").value("running"))
-      .andExpect(jsonPath("$.java").isNotEmpty());
+  void root_shouldContainThreeKeys() {
+    RootController controller = new RootController();
+    Map<String, Object> result = controller.root();
+
+    assertEquals(3, result.size());
+  }
+
+  @Test
+  void root_shouldReturnCurrentJavaVersion() {
+    RootController controller = new RootController();
+    Map<String, Object> result = controller.root();
+
+    assertEquals(System.getProperty("java.version"), result.get("java"));
   }
 }

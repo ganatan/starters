@@ -1,23 +1,23 @@
 # springboot-starter
 
-Application **Spring Boot** packagée en **JAR** et construite avec **Maven**.  
-Projet minimal servant de base technique (architecture, qualité, tooling).
+Application **Spring Boot** packagée en **JAR** et construite avec **Maven**.
 
 ---
 
-## 🧩 Pré-requis
+## 🧩 Configuration du projet (pom.xml)
 
-- Java **25**
-- Maven **3.9+**
+Avant toute compilation, vérifier et adapter les métadonnées du projet
+dans le fichier `pom.xml` :
 
-Vérification :
-
-```bash
-java -version
-mvn -v
+```xml
+<artifactId>springboot-starter</artifactId>
+<version>1.0.0</version>
+<name>springboot-starter</name>
+<description>Demo project for Spring Boot Starter</description>
+<url/>
+<licenses/>
 ```
 
----
 
 ## 📊 Dependency Updates
 
@@ -30,19 +30,13 @@ mvn versions:display-plugin-updates
 
 ---
 
-## 🏗️ Build (tests + qualité + packaging)
+## 🏗️ Build
 
-Compiler, exécuter les tests, appliquer les règles de qualité et packager l’application :
+Compiler, exécuter les tests et packager l’application :
 
 ```bash
 mvn clean install
 ```
-
-Cette commande :
-- exécute les tests
-- génère le **coverage JaCoCo**
-- applique **Checkstyle**
-- échoue si une règle est violée
 
 Artefact généré :
 
@@ -52,60 +46,24 @@ target/springboot-starter-1.0.0.jar
 
 ---
 
-## 📈 Coverage (JaCoCo)
-
-Génération du coverage :
-
-```bash
-mvn test
-```
-
-Rapport HTML :
-
-```text
-target/site/jacoco/index.html
-```
-
-Notes :
-- Java 25 → JaCoCo **0.8.14 minimum**
-- le dossier `tools/` est exclu du coverage
-
----
-
-## ✅ Qualité (Checkstyle)
-
-Lancement de Checkstyle :
-
-```bash
-mvn verify
-```
-
-Fichier de configuration attendu :
-
-```text
-checkstyle.xml
-```
-
----
-
 ## 🚀 Run
 
-### Exécution via Maven
+Lancer l’application localement sur le port `3000` :
 
 ```bash
 mvn spring-boot:run
 ```
 
-### Exécution via Java
+Ou directement avec Java :
 
 ```bash
 java -jar target/springboot-starter-1.0.0.jar
 ```
 
-Accès par défaut :
+Accès :
 
 ```text
-http://localhost:8080
+http://localhost:3000
 ```
 
 ---
@@ -115,55 +73,11 @@ http://localhost:8080
 ```bash
 mvn clean                   # nettoyage du dossier target
 mvn compile                 # compilation des sources
-mvn test                    # exécution des tests + coverage (JaCoCo)
+mvn test                    # exécution des tests
 mvn package                 # génération de l’artefact
-mvn install                 # installation en repository local
+mvn install                 # installation en repo local
 mvn dependency:tree         # affichage de l’arbre de dépendances
 mvn versions:display-dependency-updates
 mvn versions:display-plugin-updates
 mvn spring-boot:run         # exécution Spring Boot
 ```
-
----
-
-## 🗂️ Structure du projet
-
-```text
-.
-├── .gitattributes
-├── mvnw
-├── mvnw.cmd
-├── pom.xml
-├── checkstyle.xml
-└── src
-    ├── main
-    │   ├── java
-    │   │   ├── com
-    │   │   │   └── ganatan
-    │   │   │       └── starter
-    │   │   │           ├── StarterApplication.java
-    │   │   │           └── api
-    │   │   │               └── root
-    │   │   │                   └── RootController.java
-    │   │   └── tools
-    │   │       └── GenerateProjectStructure.java
-    │   └── resources
-    │       ├── application.properties
-    │       ├── static
-    │       └── templates
-    └── test
-        └── java
-            └── com
-                └── ganatan
-                    └── starter
-                        └── StarterApplicationTests.java
-```
-
----
-
-## 🎯 Objectif du projet
-
-- base Spring Boot **simple et maîtrisée**
-- configuration Maven claire
-- qualité intégrée dès le départ (tests, coverage, checkstyle)
-- point de départ pour une architecture plus avancée (DDD / Clean)

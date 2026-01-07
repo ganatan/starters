@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.5</version>
+    <version>4.0.1</version>
     <relativePath /> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ganatan</groupId>
@@ -28,7 +28,7 @@
     <url />
   </scm>
   <properties>
-    <java.version>21</java.version>
+    <java.version>25</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <checkstyle.version>11.0.1</checkstyle.version>
     <maven.checkstyle.plugin.version>3.6.0</maven.checkstyle.plugin.version>
