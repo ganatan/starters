@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
-# Apache Maven Wrapper startup batch script, version 3.3.4
+# Apache Maven Wrapper startup batch script, version 3.3.3
 #
 # Optional ENV vars
 # -----------------
