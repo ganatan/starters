@@ -2,43 +2,25 @@ package com.ganatan.starter.continents;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/continents")
 public class ContinentController {
-
   private final AtomicInteger idCounter = new AtomicInteger(0);
-  private final List<Continent> continentList = new ArrayList<>();
+  private final List<ContinentDTO> continents = new ArrayList<>();
 
-  public record Continent(int id, String name) {}
+  public record ContinentDTO(int id, String name) {}
 
-  public record CreateContinentRequestDTO(
-    @NotBlank
-    @Size(max = 50)
-    String name
-  ) {}
-
-  public record UpdateContinentRequestDTO(
-    @NotBlank
-    @Size(max = 50)
+  public record ContinentRequestDTO(
+    @NotBlank(message = "name is required")
+    @Size(max = 50, message = "name must not exceed 50 characters")
     String name
   ) {}
 
@@ -46,83 +28,65 @@ public class ContinentController {
     seed("Africa", "America", "Asia", "Europe", "Oceania", "Antarctica");
   }
 
-  @GetMapping
-  public List<Continent> getAllContinents() {
-    return continentList;
+  @GetMapping({ "", "/" })
+  public List<ContinentDTO> getAllContinents() {
+    return continents;
   }
 
   @GetMapping("/{id}")
-  public Continent getContinentById(@PathVariable int id) {
-    return findRequiredById(id);
+  public ContinentDTO getContinentById(@PathVariable int id) {
+    return requireById(id);
   }
 
-  @PostMapping
+  @PostMapping({ "", "/" })
   @ResponseStatus(HttpStatus.CREATED)
-  public Continent createContinent(@Valid @RequestBody CreateContinentRequestDTO dto) {
-    Continent created = new Continent(nextId(), normalize(dto.name()));
-    continentList.add(created);
-    return created;
+  public ContinentDTO createContinent(@Valid @RequestBody ContinentRequestDTO body) {
+    return create(body.name());
   }
 
   @PutMapping("/{id}")
-  public Continent updateContinent(@PathVariable int id, @Valid @RequestBody UpdateContinentRequestDTO dto) {
-    int index = findIndexById(id);
-    if (index == -1) {
-      throw notFound();
-    }
-    Continent updated = new Continent(id, normalize(dto.name()));
-    continentList.set(index, updated);
+  public ContinentDTO updateContinent(@PathVariable int id, @Valid @RequestBody ContinentRequestDTO body) {
+    int index = requireIndexById(id);
+    ContinentDTO updated = new ContinentDTO(id, body.name());
+    continents.set(index, updated);
     return updated;
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteContinent(@PathVariable int id) {
-    int index = findIndexById(id);
-    if (index == -1) {
-      throw notFound();
-    }
-    continentList.remove(index);
+    int index = requireIndexById(id);
+    continents.remove(index);
   }
 
   private void seed(String... names) {
     for (String name : names) {
-      Continent created = new Continent(nextId(), normalize(name));
-      continentList.add(created);
+      create(name);
     }
   }
 
-  private int nextId() {
-    return idCounter.incrementAndGet();
+  private ContinentDTO create(String name) {
+    int id = idCounter.incrementAndGet();
+    ContinentDTO created = new ContinentDTO(id, name);
+    continents.add(created);
+    return created;
   }
 
-  private static String normalize(String name) {
-    return name.trim();
-  }
-
-  private Continent findRequiredById(int id) {
-    if (id <= 0) {
-      throw notFound();
+  private ContinentDTO requireById(int id) {
+    for (ContinentDTO c : continents) {
+      if (c.id() == id) {
+        return c;
+      }
     }
-    Optional<Continent> found = continentList.stream()
-      .filter(c -> c.id() == id)
-      .findFirst();
-    return found.orElseThrow(this::notFound);
+    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CONTINENT_NOT_FOUND");
   }
 
-  private int findIndexById(int id) {
-    if (id <= 0) {
-      return -1;
-    }
-    for (int i = 0; i < continentList.size(); i++) {
-      if (continentList.get(i).id() == id) {
+  private int requireIndexById(int id) {
+    for (int i = 0; i < continents.size(); i++) {
+      if (continents.get(i).id() == id) {
         return i;
       }
     }
-    return -1;
-  }
-
-  private ResponseStatusException notFound() {
-    return new ResponseStatusException(HttpStatus.NOT_FOUND);
+    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CONTINENT_NOT_FOUND");
   }
 }

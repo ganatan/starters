@@ -1,15 +1,6 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  NotFoundException,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
+  Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param,
+  ParseIntPipe, Post, Put,
 } from '@nestjs/common';
 
 type Continent = {
@@ -23,22 +14,18 @@ export class ContinentController {
   private continentList: Continent[] = [];
 
   constructor() {
-    this.createInternal('Africa');
-    this.createInternal('America');
-    this.createInternal('Asia');
-    this.createInternal('Europe');
-    this.createInternal('Oceania');
-    this.createInternal('Antarctica');
+    ['Africa', 'America', 'Asia', 'Europe', 'Oceania', 'Antarctica']
+      .forEach(name => this.createContinent({ name }));
   }
 
   @Get()
-  getAll(): Continent[] {
+  getAllContinents(): Continent[] {
     return this.continentList;
   }
 
   @Get(':id')
-  getById(@Param('id', ParseIntPipe) id: number): Continent {
-    const continent = this.findById(id);
+  getContinentById(@Param('id', ParseIntPipe) id: number): Continent {
+    const continent = this.findContinentById(id);
     if (!continent) {
       throw new NotFoundException();
     }
@@ -47,7 +34,7 @@ export class ContinentController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() body: { name: string }): Continent {
+  createContinent(@Body() body: { name: string }): Continent {
     const continent: Continent = {
       id: ++this.idCounter,
       name: body.name,
@@ -57,11 +44,11 @@ export class ContinentController {
   }
 
   @Put(':id')
-  update(
+  updateContinent(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { name: string },
   ): Continent {
-    const index = this.continentList.findIndex(c => c.id === id);
+    const index = this.findIndexById(id);
     if (index === -1) {
       throw new NotFoundException();
     }
@@ -72,22 +59,19 @@ export class ContinentController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number): void {
-    const index = this.continentList.findIndex(c => c.id === id);
+  deleteContinent(@Param('id', ParseIntPipe) id: number): void {
+    const index = this.findIndexById(id);
     if (index === -1) {
       throw new NotFoundException();
     }
     this.continentList.splice(index, 1);
   }
 
-  private findById(id: number): Continent | undefined {
+  private findContinentById(id: number): Continent | undefined {
     return this.continentList.find(c => c.id === id);
   }
 
-  private createInternal(name: string): void {
-    this.continentList.push({
-      id: ++this.idCounter,
-      name,
-    });
+  private findIndexById(id: number): number {
+    return this.continentList.findIndex(c => c.id === id);
   }
 }

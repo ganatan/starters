@@ -12,7 +12,7 @@ class RootControllerTest {
   @Test
   void root_shouldReturnAMap() {
     RootController controller = new RootController();
-    Map<String, Object> result = controller.root();
+    Map<String, Object> result = controller.rootWithMapOf();
 
     assertNotNull(result);
     assertEquals("springboot-starter", result.get("application"));
@@ -24,7 +24,7 @@ class RootControllerTest {
   @Test
   void root_shouldContainThreeKeys() {
     RootController controller = new RootController();
-    Map<String, Object> result = controller.root();
+    Map<String, Object> result = controller.rootWithMapOf();
 
     assertEquals(3, result.size());
   }
@@ -32,7 +32,7 @@ class RootControllerTest {
   @Test
   void root_shouldReturnCurrentJavaVersion() {
     RootController controller = new RootController();
-    Map<String, Object> result = controller.root();
+    Map<String, Object> result = controller.rootWithMapOf();
 
     assertEquals(System.getProperty("java.version"), result.get("java"));
   }

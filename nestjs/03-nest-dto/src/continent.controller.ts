@@ -10,25 +10,41 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
-type Continent = {
-  id: number;
-  name: string;
-};
+type Continent = { id: number; name: string };
 
+class CreateContinentRequestDTO {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name!: string;
+}
+
+class UpdateContinentRequestDTO {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name!: string;
+}
+
+@UsePipes(
+  new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    forbidNonWhitelisted: true,
+  }),
+)
 @Controller('continents')
 export class ContinentController {
   private idCounter = 0;
   private continentList: Continent[] = [];
 
   constructor() {
-    this.createInternal('Africa');
-    this.createInternal('America');
-    this.createInternal('Asia');
-    this.createInternal('Europe');
-    this.createInternal('Oceania');
-    this.createInternal('Antarctica');
+    this.seed('Africa', 'America', 'Asia', 'Europe', 'Oceania', 'Antarctica');
   }
 
   @Get()
@@ -38,34 +54,25 @@ export class ContinentController {
 
   @Get(':id')
   getById(@Param('id', ParseIntPipe) id: number): Continent {
-    const continent = this.findById(id);
-    if (!continent) {
-      throw new NotFoundException();
-    }
-    return continent;
+    return this.findRequiredById(id);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() body: { name: string }): Continent {
-    const continent: Continent = {
-      id: ++this.idCounter,
-      name: body.name,
-    };
-    this.continentList.push(continent);
-    return continent;
+  create(@Body() dto: CreateContinentRequestDTO): Continent {
+    const created: Continent = { id: this.nextId(), name: this.normalize(dto.name) };
+    this.continentList.push(created);
+    return created;
   }
 
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { name: string },
+    @Body() dto: UpdateContinentRequestDTO,
   ): Continent {
-    const index = this.continentList.findIndex(c => c.id === id);
-    if (index === -1) {
-      throw new NotFoundException();
-    }
-    const updated: Continent = { id, name: body.name };
+    const index = this.findIndexById(id);
+    if (index === -1) throw new NotFoundException();
+    const updated: Continent = { id, name: this.normalize(dto.name) };
     this.continentList[index] = updated;
     return updated;
   }
@@ -73,21 +80,34 @@ export class ContinentController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id', ParseIntPipe) id: number): void {
-    const index = this.continentList.findIndex(c => c.id === id);
-    if (index === -1) {
-      throw new NotFoundException();
-    }
+    const index = this.findIndexById(id);
+    if (index === -1) throw new NotFoundException();
     this.continentList.splice(index, 1);
   }
 
-  private findById(id: number): Continent | undefined {
-    return this.continentList.find(c => c.id === id);
+  private seed(...names: string[]): void {
+    for (const name of names) {
+      this.continentList.push({ id: this.nextId(), name: this.normalize(name) });
+    }
   }
 
-  private createInternal(name: string): void {
-    this.continentList.push({
-      id: ++this.idCounter,
-      name,
-    });
+  private nextId(): number {
+    return ++this.idCounter;
+  }
+
+  private normalize(name: string): string {
+    return name.trim();
+  }
+
+  private findRequiredById(id: number): Continent {
+    if (id <= 0) throw new NotFoundException();
+    const found = this.continentList.find(c => c.id === id);
+    if (!found) throw new NotFoundException();
+    return found;
+  }
+
+  private findIndexById(id: number): number {
+    if (id <= 0) return -1;
+    return this.continentList.findIndex(c => c.id === id);
   }
 }
