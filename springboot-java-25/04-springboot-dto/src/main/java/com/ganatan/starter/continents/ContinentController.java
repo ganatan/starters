@@ -14,9 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/continents")
 public class ContinentController {
   private final AtomicInteger idCounter = new AtomicInteger(0);
-  private final List<ContinentDTO> continents = new ArrayList<>();
+  private final List<Continent> continents = new ArrayList<>();
 
-  public record ContinentDTO(int id, String name) {}
+  public record Continent(int id, String name) {}
 
   public record ContinentRequestDTO(
     @NotBlank(message = "name is required")
@@ -29,25 +29,25 @@ public class ContinentController {
   }
 
   @GetMapping({ "", "/" })
-  public List<ContinentDTO> getAllContinents() {
+  public List<Continent> getAllContinents() {
     return continents;
   }
 
   @GetMapping("/{id}")
-  public ContinentDTO getContinentById(@PathVariable int id) {
+  public Continent getContinentById(@PathVariable int id) {
     return requireById(id);
   }
 
   @PostMapping({ "", "/" })
   @ResponseStatus(HttpStatus.CREATED)
-  public ContinentDTO createContinent(@Valid @RequestBody ContinentRequestDTO body) {
+  public Continent createContinent(@Valid @RequestBody ContinentRequestDTO body) {
     return create(body.name());
   }
 
   @PutMapping("/{id}")
-  public ContinentDTO updateContinent(@PathVariable int id, @Valid @RequestBody ContinentRequestDTO body) {
+  public Continent updateContinent(@PathVariable int id, @Valid @RequestBody ContinentRequestDTO body) {
     int index = requireIndexById(id);
-    ContinentDTO updated = new ContinentDTO(id, body.name());
+    Continent updated = new Continent(id, body.name());
     continents.set(index, updated);
     return updated;
   }
@@ -65,15 +65,15 @@ public class ContinentController {
     }
   }
 
-  private ContinentDTO create(String name) {
+  private Continent create(String name) {
     int id = idCounter.incrementAndGet();
-    ContinentDTO created = new ContinentDTO(id, name);
+    Continent created = new Continent(id, name);
     continents.add(created);
     return created;
   }
 
-  private ContinentDTO requireById(int id) {
-    for (ContinentDTO c : continents) {
+  private Continent requireById(int id) {
+    for (Continent c : continents) {
       if (c.id() == id) {
         return c;
       }
