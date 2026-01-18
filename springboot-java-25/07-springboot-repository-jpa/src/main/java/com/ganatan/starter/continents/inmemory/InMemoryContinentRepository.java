@@ -1,9 +1,12 @@
-package com.ganatan.starter.continents;
+package com.ganatan.starter.continents.inmemory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.ganatan.starter.continents.Continent;
+import com.ganatan.starter.continents.ContinentRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 

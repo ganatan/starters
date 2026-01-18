@@ -1,6 +1,8 @@
 package com.ganatan.starter.continents;
 
 import java.util.List;
+
+import com.ganatan.starter.continents.dto.ContinentRequestDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,7 @@ public class ContinentController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Continent createContinent(@Valid @RequestBody ContinentRequestDTO body) {
+
     return service.create(body.name());
   }
 
