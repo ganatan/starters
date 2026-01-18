@@ -1,0 +1,11 @@
+<h1>angular-subject</h1>
+
+<ul>
+  <li *ngFor="let movie of movies">{{ movie }}</li>
+</ul>
+
+<button (click)="addMovie('Blade Runner')">Add Blade Runner</button>
+<button (click)="removeMovie('Exodus')">Remove Exodus</button>
+<button (click)="resetMovies()">Reset</button>
+
+<router-outlet />

@@ -1,0 +1,11 @@
+<h1>angular-continent-api</h1>
+
+<button (click)="onLoadContinents()">Load</button>
+
+<div *ngIf="error()">{{ error() }}</div>
+
+<ul>
+  @for (c of continents(); track c.id) {
+    <li>{{ c.id }} - {{ c.label }}</li>
+  }
+</ul>

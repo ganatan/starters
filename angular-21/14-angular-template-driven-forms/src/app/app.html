@@ -1,0 +1,13 @@
+<h2>Sans signals</h2>
+
+<input [(ngModel)]="name">
+<button (click)="change()">Change</button>
+<p>{{ name }}</p>
+
+<hr>
+
+<h2>Avec signals</h2>
+
+<input [ngModel]="nameS()" (ngModelChange)="nameS.set($event)">
+<button (click)="change()">Change</button>
+<p>{{ nameS() }}</p>

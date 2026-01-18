@@ -1,0 +1,25 @@
+<h2>Reactive forms</h2>
+
+<label>Name</label>
+<input [formControl]="name">
+<p>{{ name.value }}</p>
+
+<hr>
+
+<h2>Reactive + signal</h2>
+
+<form [formGroup]="formS">
+  <label>Name</label>
+  <input formControlName="name">
+</form>
+
+<p>{{ formS.get('name')?.value }}</p>
+
+<hr>
+
+<h2>Signal seul</h2>
+
+<input [value]="nameS()" (input)="nameS.set(($any($event.target)).value)">
+<p>{{ nameS() }}</p>
+
+<button (click)="change()">Change</button>

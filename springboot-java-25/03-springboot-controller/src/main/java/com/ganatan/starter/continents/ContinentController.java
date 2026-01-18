@@ -28,8 +28,7 @@ public class ContinentController {
   }
 
   public ContinentController() {
-//    init("Africa", "America", "Asia", "Europe", "Oceania", "Antarctica");
-    init("Europe", "Antarctica");
+    init("Africa", "America", "Asia", "Europe", "Oceania", "Antarctica");
   }
 
   @GetMapping({"", "/"})
