@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-generator-backend-springboot
+  namespace: ganatan-dev
+  labels:
+    app: rag-generator-backend-springboot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-generator-backend-springboot
+  template:
+    metadata:
+      labels:
+        app: rag-generator-backend-springboot
+    spec:
+      containers:
+        - name: rag-generator-backend-springboot
+          image: registry.gitlab.com/ganatan/sandbox/rag-generator-backend-springboot:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-generator-backend-springboot-service
+  namespace: ganatan-dev
+  labels:
+    app: rag-generator-backend-springboot
+spec:
+  selector:
+    app: rag-generator-backend-springboot
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: rag-generator-backend-springboot-route
+  namespace: ganatan-dev
+  labels:
+    app: rag-generator-backend-springboot
+spec:
+  to:
+    kind: Service
+    name: rag-generator-backend-springboot-service
+  port:
+    targetPort: 3000
+  tls:
+    termination: edge

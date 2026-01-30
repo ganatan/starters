@@ -1,0 +1,18 @@
+FROM node:22 AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/dist/angular-starter /app/dist/angular-starter
+COPY package*.json ./
+
+EXPOSE 4000
+
+CMD ["node", "dist/angular-starter/server/server.mjs"]

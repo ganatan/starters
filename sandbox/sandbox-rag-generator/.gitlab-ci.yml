@@ -1,0 +1,26 @@
+workflow:
+  rules:
+    - changes:
+        - rag-generator/frontend-angular/**/*
+        - rag-generator/backend-springboot/**/*
+    - when: never
+
+stages:
+  - trigger
+
+trigger-rag-generator-frontend-angular:
+  stage: trigger
+  trigger:
+    include: .gitlab/rag-generator-frontend-angular-ci.yml
+  rules:
+    - changes:
+        - rag-generator/frontend-angular/**/*
+
+trigger-rag-generator-backend-springboot:
+  stage: trigger
+  trigger:
+    include: .gitlab/rag-generator-backend-springboot-ci.yml
+  rules:
+    - changes:
+        - rag-generator/backend-springboot/**/*
+

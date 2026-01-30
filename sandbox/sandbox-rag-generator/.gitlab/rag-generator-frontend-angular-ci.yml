@@ -1,0 +1,108 @@
+workflow:
+  rules:
+    - changes:
+        - rag-generator/frontend-angular/**/*
+        - k8s/rag-generator-frontend-angular-deployment.yml
+
+    - when: never
+
+image: node:20
+
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - docker
+  - deploy
+
+.default-frontend-angular:
+  variables:
+    PROJECT_DIR: rag-generator/frontend-angular
+  cache:
+    key: frontend-angular
+    paths:
+      - $PROJECT_DIR/node_modules/
+    policy: pull-push
+  artifacts:
+    paths:
+      - $PROJECT_DIR/node_modules/
+    expire_in: 1h
+
+install:frontend-angular:
+  stage: install
+  extends: .default-frontend-angular
+  script:
+    - echo "Installing dependencies"
+    - cd $PROJECT_DIR
+    - npm ci
+
+lint:frontend-angular:
+  stage: lint
+  extends: .default-frontend-angular
+  dependencies:
+    - install:frontend-angular
+  script:
+    - echo "Running ESLint"
+    - cd $PROJECT_DIR
+    - npm run lint
+
+test:frontend-angular:
+  stage: test
+  extends: .default-frontend-angular
+  dependencies:
+    - install:frontend-angular
+  script:
+    - echo "Installing Chromium for headless tests"
+    - apt-get update && apt-get install -y chromium
+    - export CHROME_BIN=/usr/bin/chromium
+    - cd $PROJECT_DIR
+    - npm run test:ci
+
+build:frontend-angular:
+  stage: build
+  extends: .default-frontend-angular
+  dependencies:
+    - install:frontend-angular
+  script:
+    - echo "Building Angular app for production"
+    - cd $PROJECT_DIR
+    - npm run build --configuration=production
+  artifacts:
+    paths:
+      - $PROJECT_DIR/dist/
+    expire_in: 1 week
+
+docker:frontend-angular:
+  stage: docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    PROJECT_DIR: rag-generator/frontend-angular
+  script:
+    - echo "Building Docker image"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE/rag-generator-frontend-angular:$CI_COMMIT_SHA" -f $PROJECT_DIR/docker/Dockerfile.frontend-angular $PROJECT_DIR
+    - docker push "$CI_REGISTRY_IMAGE/rag-generator-frontend-angular:$CI_COMMIT_SHA"
+    - docker tag "$CI_REGISTRY_IMAGE/rag-generator-frontend-angular:$CI_COMMIT_SHA" "$CI_REGISTRY_IMAGE/rag-generator-frontend-angular:latest"
+    - docker push "$CI_REGISTRY_IMAGE/rag-generator-frontend-angular:latest"
+
+deploy:frontend-angular:
+  stage: deploy
+  image:
+    name: quay.io/openshift/origin-cli:latest
+    entrypoint: [""]
+  script:
+    - echo "Connecting to OpenShift..."
+    - oc login "$OPENSHIFT_SERVER" --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
+    - oc project ganatan-dev
+    - echo "Applying OpenShift deployment..."
+    - oc apply -f k8s/rag-generator-frontend-angular-deployment.yml
+    - echo "Restarting deployment..."
+    - oc rollout restart deployment/rag-generator-frontend-angular -n ganatan-dev
+  only:
+    - main
+    - master
+  when: on_success

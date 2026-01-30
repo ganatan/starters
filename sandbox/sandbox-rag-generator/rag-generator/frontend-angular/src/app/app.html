@@ -1,0 +1,97 @@
+<button class="btn btn-sm btn-outline-secondary toggle-mode" (click)="toggleTheme()">Toggle thème</button>
+
+<div class="container p-2">
+  <h1 class="text-center text-warning">rag-connector</h1>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-7">
+      <label class="form-label" for="question">Question</label>
+      <textarea class="form-control" [(ngModel)]="question" rows="5"
+        placeholder="Ex : Quels sont les thèmes récurrents dans les films de Christopher Nolan ?"></textarea>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="row g-3">
+        <div class="col-6">
+          <label for="modelSelect" class="form-label">Modèle</label>
+          <select id="modelSelect" class="form-select" [(ngModel)]="model" (ngModelChange)="onModelChange($event)">
+            <option value="chatgpt">ChatGPT</option>
+            <option value="claude">Claude</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label for="modeSelect" class="form-label">Mode</label>
+          <select id="modeSelect" class="form-select" [(ngModel)]="mode" (ngModelChange)="onModeChange($event)">
+            <option value="rag">Avec RAG</option>
+            <option value="direct">Sans RAG</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label for="styleSelect" class="form-label">Style</label>
+          <select id="styleSelect" class="form-select" [(ngModel)]="style" (ngModelChange)="onStyleChange($event)">
+            <option *ngFor="let s of styleOptions" [value]="s.value">{{ s.label }}</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label for="lengthSelect" class="form-label">Longueur</label>
+          <select id="lengthSelect" class="form-select" [(ngModel)]="length" (ngModelChange)="onLengthChange($event)">
+            <option value="short">Courte</option>
+            <option value="medium">Moyenne</option>
+            <option value="long">Longue</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-3">
+    <div class="col-12">
+      <div class="card p-4">
+        <div class="d-flex align-items-center gap-2 mb-2 btn-group-responsive">
+          <button class="btn btn-warning" (click)="loadContent()">Générer</button>
+          <button class="btn btn-outline-warning" (click)="resetContent()">Réinitialiser</button>
+          <span *ngIf="content && !loading" class="badge bg-warning text-dark">Texte Ok ✓</span>
+          <span *ngIf="duration > 0" class="text-warning ms-auto small-text">
+            Réponse en {{ duration.toFixed(1) }}s
+          </span>
+        </div>
+
+        <div class="position-relative">
+          <div *ngIf="loading" class="d-flex align-items-center gap-3">
+            <div class="progress flex-grow-1">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                [style.width.%]="progress"></div>
+            </div>
+            <div class="spinner-border text-warning" role="status" style="width: 1.5rem; height: 1.5rem;">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <div *ngIf="loading" class="alert alert-info alert-dismissible fade show" role="alert">
+              📨 Requête envoyée à {{ model === 'chatgpt' ? 'OpenAI' : 'Anthropic' }}...
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+            <div *ngIf="loading && !content && !error" class="alert alert-warning alert-dismissible fade show"
+              role="alert">
+              ⏳ Réponse en cours de traitement...
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+            <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+              ❌ {{ error }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+            <div *ngIf="content && !error" class="alert alert-success alert-dismissible fade show" role="alert">
+              ✅ Réponse reçue avec succès.
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <textarea class="form-control" [value]="content" readonly rows="6"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

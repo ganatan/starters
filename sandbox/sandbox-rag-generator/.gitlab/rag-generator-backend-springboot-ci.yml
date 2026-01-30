@@ -1,0 +1,113 @@
+workflow:
+  rules:
+    - changes:
+        - rag-generator/backend-springboot/**/*
+        - k8s/rag-generator-backend-springboot-deployment.yml
+        
+    - when: never
+
+image: maven:3.9-eclipse-temurin-21
+
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - docker
+  - deploy
+
+.default-backend-springboot:
+  variables:
+    PROJECT_DIR: rag-generator/backend-springboot
+  cache:
+    key: backend-springboot
+    paths:
+      - $PROJECT_DIR/.m2/repository
+    policy: pull-push
+  artifacts:
+    paths:
+      - $PROJECT_DIR/.m2/repository
+    expire_in: 1h
+
+install:backend-springboot:
+  stage: install
+  extends: .default-backend-springboot
+  script:
+    - echo "Installing dependencies"
+    - cd $PROJECT_DIR
+    - mvn -B -DskipTests verify
+
+lint:backend-springboot:
+  stage: lint
+  extends: .default-backend-springboot
+  dependencies:
+    - install:backend-springboot
+  script:
+    - echo "Running Checkstyle"
+    - cd $PROJECT_DIR
+    - mvn -B checkstyle:check
+
+test:backend-springboot:
+  stage: test
+  extends: .default-backend-springboot
+  dependencies:
+    - install:backend-springboot
+  script:
+    - echo "Running unit tests"
+    - cd $PROJECT_DIR
+    - mvn -B clean test
+  artifacts:
+    when: always
+    reports:
+      junit: $PROJECT_DIR/target/surefire-reports/*.xml
+    paths:
+      - $PROJECT_DIR/target/surefire-reports/
+
+build:backend-springboot:
+  stage: build
+  extends: .default-backend-springboot
+  dependencies:
+    - install:backend-springboot
+  script:
+    - echo "Building Spring Boot JAR"
+    - cd $PROJECT_DIR
+    - mvn -B -DskipTests package
+  artifacts:
+    paths:
+      - $PROJECT_DIR/target/*.jar
+      - $PROJECT_DIR/target/*.war
+    expire_in: 1 week
+
+docker:backend-springboot:
+  stage: docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    PROJECT_DIR: rag-generator/backend-springboot
+  script:
+    - echo "Building Docker image"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE/rag-generator-backend-springboot:$CI_COMMIT_SHA" -f $PROJECT_DIR/docker/Dockerfile.backend-springboot $PROJECT_DIR
+    - docker push "$CI_REGISTRY_IMAGE/rag-generator-backend-springboot:$CI_COMMIT_SHA"
+    - docker tag "$CI_REGISTRY_IMAGE/rag-generator-backend-springboot:$CI_COMMIT_SHA" "$CI_REGISTRY_IMAGE/rag-generator-backend-springboot:latest"
+    - docker push "$CI_REGISTRY_IMAGE/rag-generator-backend-springboot:latest"
+
+deploy:backend-springboot:
+  stage: deploy
+  image:
+    name: quay.io/openshift/origin-cli:latest
+    entrypoint: [""]
+  script:
+    - echo "Connecting to OpenShift..."
+    - oc login "$OPENSHIFT_SERVER" --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
+    - oc project ganatan-dev
+    - echo "Applying OpenShift deployment..."
+    - oc apply -f k8s/rag-generator-backend-springboot-deployment.yml
+    - echo "Restarting deployment..."
+    - oc rollout restart deployment/rag-generator-backend-springboot -n ganatan-dev
+  only:
+    - main
+    - master
+  when: on_success
